@@ -1,0 +1,269 @@
+import os
+import re
+import tkinter as tk
+from tkinter import filedialog, messagebox, ttk
+import threading
+
+class CommentRemover:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Code Comment Remover")
+        self.root.geometry("800x600")
+        self.root.configure(bg='#2b2b2b')
+        
+        # Supported file extensions
+        self.supported_extensions = {'.php', '.py', '.html', '.css', '.js'}
+        
+        self.setup_ui()
+        
+    def setup_ui(self):
+        # Main frame
+        main_frame = tk.Frame(self.root, bg='#2b2b2b')
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Title
+        title_label = tk.Label(main_frame, text="Code Comment Remover", 
+                              font=('Arial', 18, 'bold'), fg='white', bg='#2b2b2b')
+        title_label.pack(pady=(0, 20))
+        
+        # File/Folder selection frame
+        selection_frame = tk.Frame(main_frame, bg='#2b2b2b')
+        selection_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        # Buttons frame
+        buttons_frame = tk.Frame(selection_frame, bg='#2b2b2b')
+        buttons_frame.pack(fill=tk.X)
+        
+        tk.Button(buttons_frame, text="Select Files", command=self.select_files,
+                 bg='#4CAF50', fg='white', font=('Arial', 10, 'bold'),
+                 padx=20, pady=10).pack(side=tk.LEFT, padx=(0, 10))
+        
+        tk.Button(buttons_frame, text="Select Folder", command=self.select_folder,
+                 bg='#2196F3', fg='white', font=('Arial', 10, 'bold'),
+                 padx=20, pady=10).pack(side=tk.LEFT, padx=(0, 10))
+        
+        tk.Button(buttons_frame, text="Clear Selection", command=self.clear_selection,
+                 bg='#FF5722', fg='white', font=('Arial', 10, 'bold'),
+                 padx=20, pady=10).pack(side=tk.LEFT)
+        
+        # Selected files display
+        self.files_listbox = tk.Listbox(main_frame, height=15, bg='#3c3c3c', 
+                                       fg='white', selectbackground='#555555')
+        self.files_listbox.pack(fill=tk.BOTH, expand=True, pady=(10, 20))
+        
+        # Options frame
+        options_frame = tk.Frame(main_frame, bg='#2b2b2b')
+        options_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        self.backup_var = tk.BooleanVar(value=True)
+        tk.Checkbutton(options_frame, text="Create backup files (.bak)", 
+                      variable=self.backup_var, bg='#2b2b2b', fg='white',
+                      selectcolor='#4CAF50', font=('Arial', 10)).pack(anchor=tk.W)
+        
+        # Process button
+        process_btn = tk.Button(main_frame, text="Remove Comments", 
+                               command=self.start_processing,
+                               bg='#FF9800', fg='white', font=('Arial', 12, 'bold'),
+                               padx=40, pady=15)
+        process_btn.pack(pady=10)
+        
+        # Progress bar
+        self.progress = ttk.Progressbar(main_frame, mode='determinate')
+        self.progress.pack(fill=tk.X, pady=(10, 0))
+        
+        # Status label
+        self.status_label = tk.Label(main_frame, text="Ready", 
+                                    fg='#4CAF50', bg='#2b2b2b', font=('Arial', 10))
+        self.status_label.pack(pady=(5, 0))
+        
+        self.selected_files = []
+        
+    def select_files(self):
+        filetypes = [
+            ('All Supported', '*.php;*.py;*.html;*.css;*.js'),
+            ('PHP files', '*.php'),
+            ('Python files', '*.py'),
+            ('HTML files', '*.html'),
+            ('CSS files', '*.css'),
+            ('JavaScript files', '*.js'),
+            ('All files', '*.*')
+        ]
+        
+        files = filedialog.askopenfilenames(
+            title="Select code files",
+            filetypes=filetypes
+        )
+        
+        if files:
+            self.selected_files.extend(files)
+            self.update_files_display()
+            
+    def select_folder(self):
+        folder = filedialog.askdirectory(title="Select folder containing code files")
+        if folder:
+            self.scan_folder(folder)
+            self.update_files_display()
+            
+    def scan_folder(self, folder_path):
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                _, ext = os.path.splitext(file)
+                if ext.lower() in self.supported_extensions:
+                    if file_path not in self.selected_files:
+                        self.selected_files.append(file_path)
+                        
+    def clear_selection(self):
+        self.selected_files.clear()
+        self.update_files_display()
+        
+    def update_files_display(self):
+        self.files_listbox.delete(0, tk.END)
+        for file_path in self.selected_files:
+            self.files_listbox.insert(tk.END, file_path)
+            
+    def remove_php_comments(self, content):
+        # Remove single-line comments //
+        content = re.sub(r'//.*?$', '', content, flags=re.MULTILINE)
+        # Remove single-line comments #
+        content = re.sub(r'#.*?$', '', content, flags=re.MULTILINE)
+        # Remove multi-line comments /* */
+        content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
+        return content
+        
+    def remove_python_comments(self, content):
+        # Remove single-line comments #
+        content = re.sub(r'#.*?$', '', content, flags=re.MULTILINE)
+        # Remove multi-line strings used as comments (docstrings)
+        content = re.sub(r'""".*?"""', '', content, flags=re.DOTALL)
+        content = re.sub(r"'''.*?'''", '', content, flags=re.DOTALL)
+        return content
+        
+    def remove_html_comments(self, content):
+        # Remove HTML comments <!-- -->
+        content = re.sub(r'<!--.*?-->', '', content, flags=re.DOTALL)
+        return content
+        
+    def remove_css_comments(self, content):
+        # Remove CSS comments /* */
+        content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
+        return content
+        
+    def remove_js_comments(self, content):
+        # Remove single-line comments //
+        content = re.sub(r'//.*?$', '', content, flags=re.MULTILINE)
+        # Remove multi-line comments /* */
+        content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
+        return content
+        
+    def process_file(self, file_path):
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+                
+            original_content = content
+            _, ext = os.path.splitext(file_path)
+            ext = ext.lower()
+            
+            if ext == '.php':
+                content = self.remove_php_comments(content)
+            elif ext == '.py':
+                content = self.remove_python_comments(content)
+            elif ext == '.html':
+                content = self.remove_html_comments(content)
+            elif ext == '.css':
+                content = self.remove_css_comments(content)
+            elif ext == '.js':
+                content = self.remove_js_comments(content)
+                
+            # Clean up extra whitespace
+            content = re.sub(r'\n\s*\n', '\n\n', content)  # Remove excessive blank lines
+            content = re.sub(r'[ \t]+$', '', content, flags=re.MULTILINE)  # Remove trailing spaces
+            
+            # Create backup if requested
+            if self.backup_var.get():
+                backup_path = file_path + '.bak'
+                with open(backup_path, 'w', encoding='utf-8') as f:
+                    f.write(original_content)
+                    
+            # Write processed content
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+                
+            return True, None
+            
+        except Exception as e:
+            return False, str(e)
+            
+    def start_processing(self):
+        if not self.selected_files:
+            messagebox.showwarning("No Files", "Please select files or folders first!")
+            return
+            
+        # Disable the process button
+        for widget in self.root.winfo_children():
+            self.disable_widget(widget)
+            
+        # Start processing in a separate thread
+        thread = threading.Thread(target=self.process_files)
+        thread.daemon = True
+        thread.start()
+        
+    def disable_widget(self, widget):
+        try:
+            widget.configure(state='disabled')
+        except:
+            pass
+        for child in widget.winfo_children():
+            self.disable_widget(child)
+            
+    def enable_widget(self, widget):
+        try:
+            widget.configure(state='normal')
+        except:
+            pass
+        for child in widget.winfo_children():
+            self.enable_widget(child)
+            
+    def process_files(self):
+        total_files = len(self.selected_files)
+        processed = 0
+        errors = []
+        
+        self.progress['maximum'] = total_files
+        
+        for i, file_path in enumerate(self.selected_files):
+            self.status_label.config(text=f"Processing: {os.path.basename(file_path)}")
+            self.root.update()
+            
+            success, error = self.process_file(file_path)
+            if success:
+                processed += 1
+            else:
+                errors.append(f"{file_path}: {error}")
+                
+            self.progress['value'] = i + 1
+            self.root.update()
+            
+        # Re-enable widgets
+        for widget in self.root.winfo_children():
+            self.enable_widget(widget)
+            
+        # Show results
+        if errors:
+            error_msg = f"Processed {processed}/{total_files} files successfully.\n\nErrors:\n" + "\n".join(errors[:5])
+            if len(errors) > 5:
+                error_msg += f"\n... and {len(errors) - 5} more errors"
+            messagebox.showwarning("Processing Complete with Errors", error_msg)
+        else:
+            messagebox.showinfo("Success", f"Successfully processed {processed} files!")
+            
+        self.status_label.config(text="Ready")
+        self.progress['value'] = 0
+        
+    def run(self):
+        self.root.mainloop()
+
+if __name__ == "__main__":
+    app = CommentRemover()
+    app.run()

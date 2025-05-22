@@ -12,7 +12,7 @@ class CommentRemover:
     def __init__(self):
         self.root = ctk.CTk()
         self.root.title("Code Comment Remover")
-        self.root.geometry("900x700")
+        self.root.geometry("850x600")
         
         # Supported file extensions
         self.supported_extensions = {'.php', '.py', '.html', '.css', '.js'}
@@ -22,107 +22,112 @@ class CommentRemover:
     def setup_ui(self):
         # Main container
         main_frame = ctk.CTkFrame(self.root)
-        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        main_frame.pack(fill="both", expand=True, padx=15, pady=15)
         
         # Title
         title_label = ctk.CTkLabel(main_frame, text="🚀 Code Comment Remover", 
-                                  font=ctk.CTkFont(size=24, weight="bold"))
-        title_label.pack(pady=(20, 30))
+                                  font=ctk.CTkFont(size=20, weight="bold"))
+        title_label.pack(pady=(10, 5))
         
         # Subtitle
         subtitle_label = ctk.CTkLabel(main_frame, 
                                      text="Remove comments from PHP, Python, HTML, CSS & JavaScript files",
-                                     font=ctk.CTkFont(size=14))
-        subtitle_label.pack(pady=(0, 30))
+                                     font=ctk.CTkFont(size=12))
+        subtitle_label.pack(pady=(0, 15))
         
         # File selection frame
         selection_frame = ctk.CTkFrame(main_frame)
-        selection_frame.pack(fill="x", padx=20, pady=(0, 20))
+        selection_frame.pack(fill="x", padx=15, pady=(0, 10))
         
         selection_title = ctk.CTkLabel(selection_frame, text="📁 File Selection", 
-                                      font=ctk.CTkFont(size=16, weight="bold"))
-        selection_title.pack(pady=(15, 10))
+                                      font=ctk.CTkFont(size=14, weight="bold"))
+        selection_title.pack(pady=(10, 5))
         
         # Buttons frame
         buttons_frame = ctk.CTkFrame(selection_frame, fg_color="transparent")
-        buttons_frame.pack(fill="x", padx=20, pady=(0, 15))
+        buttons_frame.pack(fill="x", padx=15, pady=(0, 10))
         
         self.select_files_btn = ctk.CTkButton(buttons_frame, text="📄 Select Files", 
                                              command=self.select_files,
-                                             font=ctk.CTkFont(size=12, weight="bold"),
-                                             height=40, width=140)
-        self.select_files_btn.pack(side="left", padx=(0, 10))
+                                             font=ctk.CTkFont(size=11, weight="bold"),
+                                             height=35, width=120)
+        self.select_files_btn.pack(side="left", padx=(0, 8))
         
         self.select_folder_btn = ctk.CTkButton(buttons_frame, text="📂 Select Folder", 
                                               command=self.select_folder,
-                                              font=ctk.CTkFont(size=12, weight="bold"),
-                                              height=40, width=140)
-        self.select_folder_btn.pack(side="left", padx=(0, 10))
+                                              font=ctk.CTkFont(size=11, weight="bold"),
+                                              height=35, width=120)
+        self.select_folder_btn.pack(side="left", padx=(0, 8))
         
         self.clear_btn = ctk.CTkButton(buttons_frame, text="🗑️ Clear All", 
                                       command=self.clear_selection,
-                                      font=ctk.CTkFont(size=12, weight="bold"),
-                                      height=40, width=120,
+                                      font=ctk.CTkFont(size=11, weight="bold"),
+                                      height=35, width=100,
                                       fg_color="#e74c3c", hover_color="#c0392b")
         self.clear_btn.pack(side="left")
         
         # Selected files display
         files_frame = ctk.CTkFrame(main_frame)
-        files_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+        files_frame.pack(fill="both", expand=True, padx=15, pady=(0, 10))
         
         files_title = ctk.CTkLabel(files_frame, text="📋 Selected Files", 
-                                  font=ctk.CTkFont(size=16, weight="bold"))
-        files_title.pack(pady=(15, 10))
+                                  font=ctk.CTkFont(size=14, weight="bold"))
+        files_title.pack(pady=(10, 5))
         
-        # Textbox for file list (better than listbox in customtkinter)
-        self.files_textbox = ctk.CTkTextbox(files_frame, height=200, 
-                                           font=ctk.CTkFont(family="Consolas", size=11))
-        self.files_textbox.pack(fill="both", expand=True, padx=20, pady=(0, 15))
+        # Textbox for file list (smaller height)
+        self.files_textbox = ctk.CTkTextbox(files_frame, height=120, 
+                                           font=ctk.CTkFont(family="Consolas", size=10))
+        self.files_textbox.pack(fill="both", expand=True, padx=15, pady=(0, 10))
         
         # Options frame
         options_frame = ctk.CTkFrame(main_frame)
-        options_frame.pack(fill="x", padx=20, pady=(0, 20))
+        options_frame.pack(fill="x", padx=15, pady=(0, 10))
         
         options_title = ctk.CTkLabel(options_frame, text="⚙️ Options", 
-                                    font=ctk.CTkFont(size=16, weight="bold"))
-        options_title.pack(pady=(15, 10))
+                                    font=ctk.CTkFont(size=14, weight="bold"))
+        options_title.pack(pady=(10, 5))
         
         self.backup_var = ctk.BooleanVar(value=True)
         self.backup_checkbox = ctk.CTkCheckBox(options_frame, 
                                               text="💾 Create backup files (.bak)",
                                               variable=self.backup_var,
-                                              font=ctk.CTkFont(size=13))
-        self.backup_checkbox.pack(pady=(0, 15))
+                                              font=ctk.CTkFont(size=12))
+        self.backup_checkbox.pack(pady=(0, 10))
         
         # Process section
         process_frame = ctk.CTkFrame(main_frame)
-        process_frame.pack(fill="x", padx=20, pady=(0, 20))
+        process_frame.pack(fill="x", padx=15, pady=(0, 10))
+        
+        process_title = ctk.CTkLabel(process_frame, text="🎯 Processing", 
+                                    font=ctk.CTkFont(size=14, weight="bold"))
+        process_title.pack(pady=(10, 5))
+        
+        # Stats and Process button in same row
+        action_frame = ctk.CTkFrame(process_frame, fg_color="transparent")
+        action_frame.pack(fill="x", padx=15, pady=(0, 10))
+        
+        self.files_count_label = ctk.CTkLabel(action_frame, text="Files: 0", 
+                                             font=ctk.CTkFont(size=12, weight="bold"))
+        self.files_count_label.pack(side="left")
         
         # Process button
-        self.process_btn = ctk.CTkButton(process_frame, text="🎯 Remove Comments", 
+        self.process_btn = ctk.CTkButton(action_frame, text="🚀 REMOVE COMMENTS", 
                                         command=self.start_processing,
-                                        font=ctk.CTkFont(size=16, weight="bold"),
-                                        height=50, width=200,
-                                        fg_color="#27ae60", hover_color="#2ecc71")
-        self.process_btn.pack(pady=20)
+                                        font=ctk.CTkFont(size=14, weight="bold"),
+                                        height=40, width=200,
+                                        fg_color="#e74c3c", hover_color="#c0392b")
+        self.process_btn.pack(side="right")
         
-        # Progress bar
-        self.progress = ctk.CTkProgressBar(process_frame, width=400, height=20)
-        self.progress.pack(pady=(0, 10))
+        # Progress bar - make it smaller but visible
+        self.progress = ctk.CTkProgressBar(process_frame, width=400, height=20,
+                                          progress_color="#27ae60")
+        self.progress.pack(padx=15, pady=(0, 5))
         self.progress.set(0)
         
         # Status label
         self.status_label = ctk.CTkLabel(process_frame, text="Ready to process files 🚀", 
-                                        font=ctk.CTkFont(size=12))
-        self.status_label.pack(pady=(0, 15))
-        
-        # Stats frame
-        stats_frame = ctk.CTkFrame(process_frame, fg_color="transparent")
-        stats_frame.pack(fill="x", pady=(0, 10))
-        
-        self.files_count_label = ctk.CTkLabel(stats_frame, text="Files: 0", 
-                                             font=ctk.CTkFont(size=11))
-        self.files_count_label.pack(side="left")
+                                        font=ctk.CTkFont(size=11))
+        self.status_label.pack(pady=(0, 10))
         
         self.selected_files = []
         
@@ -269,7 +274,7 @@ class CommentRemover:
             return
             
         # Disable buttons during processing
-        self.process_btn.configure(state="disabled", text="⏳ Processing...")
+        self.process_btn.configure(state="disabled", text="⏳ PROCESSING...")
         self.select_files_btn.configure(state="disabled")
         self.select_folder_btn.configure(state="disabled")
         self.clear_btn.configure(state="disabled")
@@ -300,7 +305,7 @@ class CommentRemover:
                 errors.append(f"{file_path}: {error}")
                 
         # Re-enable buttons
-        self.process_btn.configure(state="normal", text="🎯 Remove Comments")
+        self.process_btn.configure(state="normal", text="🚀 REMOVE COMMENTS")
         self.select_files_btn.configure(state="normal")
         self.select_folder_btn.configure(state="normal")
         self.clear_btn.configure(state="normal")
